@@ -1,0 +1,67 @@
+{
+  "name": "Bubbletea TUI Container",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "shutdownAction": "stopContainer",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {
+      "version": "latest"
+    },
+    // Also installs gopls, dlv, staticcheck and golangci-lint into /go/bin
+    "ghcr.io/devcontainers/features/go:1": {
+      "version": "1.27.1"
+    },
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "lts"
+    },
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
+  },
+  // Lip Gloss / termenv pick colour depth and glyph support from these,
+  // so pin them rather than relying on whatever the host terminal passes through.
+  "containerEnv": {
+    "TERM": "xterm-256color",
+    "COLORTERM": "truecolor",
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8"
+  },
+  // Keep the module and build caches across container rebuilds.
+  "mounts": [
+    "source=tui-air-quality-gomodcache,target=/go/pkg/mod,type=volume",
+    "source=tui-air-quality-gobuildcache,target=/home/vscode/.cache/go-build,type=volume"
+  ],
+  // Fresh named volumes are root-owned, and /go/pkg isn't writable by the dev user,
+  // so hand the caches (incl. the checksum DB cache) to vscode, then install tools and prefetch deps.
+  "postCreateCommand": "sudo apt update && sudo apt install -y inotify-tools watchman ffmpeg gifsicle && sudo mkdir -p /go/pkg/sumdb && sudo chown vscode /home/vscode/.cache && sudo chown -R vscode /go/pkg/mod /go/pkg/sumdb /home/vscode/.cache/go-build && go install mvdan.cc/gofumpt@latest && if [ -f go.mod ]; then go mod download; fi",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "anthropic.claude-code",
+        "golang.go",
+        "vincaslt.highlight-matching-tag",
+        "t3dotgg.vsc-material-theme-but-i-wont-sue-you",
+        "ms-azuretools.vscode-docker"
+      ],
+      "settings": {
+        // Color theme
+        "workbench.colorTheme": "Material Theme Darker High Contrast",
+        "go.toolsManagement.autoUpdate": false,
+        "go.useLanguageServer": true,
+        "go.lintTool": "golangci-lint",
+        "go.lintOnSave": "package",
+        "gopls": {
+          "formatting.gofumpt": true,
+          "ui.semanticTokens": true
+        },
+        "[go]": {
+          "editor.formatOnSave": true,
+          "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+          }
+        },
+        "terminal.integrated.gpuAcceleration": "on",
+        "terminal.integrated.minimumContrastRatio": 1
+      }
+    }
+  },
+  // Use non-root user
+  "remoteUser": "vscode"
+}

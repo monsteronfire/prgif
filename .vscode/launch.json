@@ -1,0 +1,15 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      // Bubbletea needs a real TTY, so run the program in the integrated
+      // terminal instead of the Debug Console.
+      "name": "Debug TUI",
+      "type": "go",
+      "request": "launch",
+      "mode": "debug",
+      "program": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    }
+  ]
+}
